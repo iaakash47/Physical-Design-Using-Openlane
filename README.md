@@ -147,5 +147,166 @@ The above list of tools shows that, many different tools are required for variou
 Open the openlane directory
 ![Screenshot from 2022-08-20 18-32-20](https://user-images.githubusercontent.com/88897605/185748211-64e57fc9-0438-4776-bcbb-e8e89feb7d53.png)
 
+- The ```designs``` folder contains all the designs provided by Efabless. This is the directory from which OpenLane fetches the design.  Consider the picorv32a design. Upon design preparation a runs folder is added. Within the folder containing the date resides the configuration, results, reports and other files that are use in the run. 
+  
+![Design](./images/design2.PNG)
+ - The ```scripts``` folder contains all the automation scripts used by OpenLane
+ -  Open in the ```pdk``` folder contains three sub folders. 
+ - ```skywater-pdk``` is by defaukt not configured to work with opensource tools. So OpenLane provides ```open_pdk``` and ```Sky130A``` directory which has the configuration files for each of the tools used in the OpenLane flow
+ - The `configuration` folder comtains the .tvl configurations for each tool. However these configurations can be overridden within the design or interactively in the openlane flow
+- The `pdk` directory contains
+    - `skywater-pdks` - This contains the pdk provided by the skywater foundry
+    - `openpdk` - This contains the openpdks
+    - `sky130A` - This directory contains the library referenes and the library technology files which are adpated to work with OpenLane Flow
+
+## Working with OpenLane
+
+### Start Openlane
+
+Go the the openlane directory and type ```docker``` to start the docker containter.\
+
+The terminal changes into the docker instance.\
+
+Open the OpenLane in interactive mode.\
+
+```./flow.tcl -interactive```\
+
+Set the package required by OpenLane.\
+
+```package require openlane 0.9```
+### Design Preparation 
+
+Prepare the design
+
+```prep -design picorv32a```
+
+- To resume from a previous run use `-tag run_name`
+- To overwrite the previous run use `tag run_name -overwrite`
+- *Note*: Any configuration done in the `config.tcl` of the source folder after design preparation will not be refleceted. To run wih a modified configuration, the design configuration can be overriten by passing the configuration to openlane interactively
+- A runs folder is created as discussed
+- On loading a previous run, to know the last run state one has to check the Current def file which is set. This can be done using
+```zsh
+echo $::env(CURRENT_DEF)
+```
+- To set to resume from a stage before the current DEF , one has to set the ```CURRENT_DEF``` environment variable to the required path. This can be done using
+```tcl
+set ::env(CURRENT_DEF) /path/to/the/required/def/file
+```
+- The `def` files of every  stage can be found in the `runs>results>stage_name>design_stage.def` path. 
+- These `def` files can be opened with `magic` by using the `sky130A.tech` as the technology file and the `lef` file from the `tmp` directory if required.
+
+### Configuration Priority
+
+Configuration priority (from high to low) is as follows
+- `pdk_specific_config.tcl`  - Design Folder
+- `config.tcl` - Design Folder
+- `tool_specific_config` - Configuration Folder in OPENLANE_ROOT
+
+## Synthesis
+
+Run the synthesis
+
+```run_synthesis```
+
+OpenLane invokes the following
+
+- `Yosys` - RTL Synthesis and maps to yosys generic cells
+- `abc` - Technology mapping with the Skywater130 PDK. Here `sky130_fd_sc_hd` Skywater Foundry produced High density standard cells are used.
+- `OpenSTA` - This does the Static Timing Analysis on the netlist generated after synthesis and generated the timing reports 
+
+
+
+View the synthesis statistics
+```
+
+10. Printing statistics.
+
+=== picorv32a ===
+
+   Number of wires:               6263
+   Number of wire bits:           8542
+   Number of public wires:         142
+   Number of public wire bits:    1973
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               8115
+     $_ANDNOT_                    1164
+     $_AND_                        397
+     $_DFFE_PP_                   1240
+     $_DFF_P_                       91
+     $_MUX_                       2709
+     $_NAND_                       227
+     $_NOR_                        168
+     $_NOT_                        144
+     $_ORNOT_                      164
+     $_OR_                        1045
+     $_SDFFCE_PN0P_                 34
+     $_SDFFCE_PP0P_                  6
+     $_SDFFE_PN0P_                 154
+     $_SDFFE_PP0P_                   1
+     $_SDFFE_PP1P_                   3
+     $_SDFF_PN0_                    66
+     $_SDFF_PP0_                     1
+     $_XNOR_                       113
+     $_XOR_                        388
+```
+The STA Reports can be viewed from the Reports folder.
+
+The openSTA tool generated the timing reports. It can be seen from below that 
+
+### Key concepts
+
+#### Utilisation Factor 
+
+- The flop ratio is defined as the ratio of the number of flops to the total number of cells
+- Here flop ratio is **1613/14876 = 0.1084** (i.e: 10.8%) [From the synthesis statistics]
+
+#### Utilisation Factor
+
+- The ratio of area occupied by the cells in the netlist to the total area of the core
+- Best practice is to set the utilisation factor less than 50% so that there will be space for optimisations, routing, inserting buffers etc.,
+
+### Aspect Ratio
+
+- Aspect ratio is the ratio of height to the width of the die.
+- Aspect Ratio of 1 indicates that the die is a square die
+
+## Floorplanning
+
+Floorplanning involves the following stages
+
+### Pre-Placed cells
+
+- Whenever there is a complex logic which is repeated multiple times or a design given by a third-party it can be perceived as abstract black box with input and output ports, clocks etc ., 
+- These modules can be either macros or IP
+    - Macro  - It is a module such as CPU Core which are developed by the entity fabicating the chip
+    - IP - It is an "Intellectual Propertly" which the entity fabricating the chip gets as a package from a third party or even packaged Hard IPs developed by the same entity. Common examples of IPs are SRAM, PLL, Protocol Converters etc.,
+
+- These Macros and IPs are placed in the core at first before placing the standard cells  and power planning
+- These are optimally such that the cells which are more connected to each other are placed nearby and oriented for input and ouputs
+
+### Decoupling Capacitors to the pre placed cells
+- The power lines can have some RLC component causing the voltage to drop at the node where it enters the Blocks or the ground of the cell can be at a higher potential than ideally 0V
+- When this happens, there is a chance such that the logic transitions are not to the upper or lower noise margins but to the forbidden state causing the circuit to misbehave
+- This is prevented by adding a capacitor in parallel with the power and ground node of the block such that the capacitor decouples the block from the power source whenever there is a logic transition
+
+### Power Planning
+
+- When there are several cells or blocks drawing power from the same power rail and sinking power to the same ground pin the following effects are observed
+    - Whenever there is alogic transition from 1 to 0 in a large number of cells then there is a Voltage Droop in the power lines as Voltage Drops from Vdd
+    - Whener there is a logic transition from 0 to 1 in a large number of cells simultaneously causes the ground potential to raise above 0V calles as Ground Bump
+    - These effects pose a risk of driving the logic state out of the specified noise margin.
+    - To avoid this the Vdd and Gnd are placed as a grid of horizontal and vertical tracks and the cell nearer to an intersection can tap power or sink power to the Vdd or Gnd intersection respectively
+
+### Pin Placement
+ - The input, output and Clock pins are placed optimally such that there is less complication in routing or optimised delay
+ - There are different styles of pin placement in openlane like `random pin placement` , `uniformly spaced` etc.,
+
+### Floorplanning - Openlane
+
+Command: `run_floorplan`
+
+Successful floorplanning gives a `def` file as output. This file contains the die area and placement of standard cells.
 
 
