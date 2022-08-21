@@ -237,37 +237,89 @@ OpenLane invokes the following
 View the synthesis statistics
 ```
 
-10. Printing statistics.
 
-=== picorv32a ===
+24. Printing statistics.
 
-   Number of wires:               6263
-   Number of wire bits:           8542
-   Number of public wires:         142
-   Number of public wire bits:    1973
+=== picorv32 ===
+
+   Number of wires:               9379
+   Number of wire bits:           9761
+   Number of public wires:        1512
+   Number of public wire bits:    1894
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               8115
-     $_ANDNOT_                    1164
-     $_AND_                        397
-     $_DFFE_PP_                   1240
-     $_DFF_P_                       91
-     $_MUX_                       2709
-     $_NAND_                       227
-     $_NOR_                        168
-     $_NOT_                        144
-     $_ORNOT_                      164
-     $_OR_                        1045
-     $_SDFFCE_PN0P_                 34
-     $_SDFFCE_PP0P_                  6
-     $_SDFFE_PN0P_                 154
-     $_SDFFE_PP0P_                   1
-     $_SDFFE_PP1P_                   3
-     $_SDFF_PN0_                    66
-     $_SDFF_PP0_                     1
-     $_XNOR_                       113
-     $_XOR_                        388
+   Number of cells:               9659
+     sky130_fd_sc_hd__a2111o_2       1
+     sky130_fd_sc_hd__a211o_2       68
+     sky130_fd_sc_hd__a211oi_2      11
+     sky130_fd_sc_hd__a21bo_2       17
+     sky130_fd_sc_hd__a21boi_2       6
+     sky130_fd_sc_hd__a21o_2       263
+     sky130_fd_sc_hd__a21oi_2      117
+     sky130_fd_sc_hd__a221o_2      119
+     sky130_fd_sc_hd__a22o_2       155
+     sky130_fd_sc_hd__a22oi_2        2
+     sky130_fd_sc_hd__a2bb2o_2      22
+     sky130_fd_sc_hd__a311o_2       35
+     sky130_fd_sc_hd__a311oi_2       1
+     sky130_fd_sc_hd__a31o_2        80
+     sky130_fd_sc_hd__a31oi_2        7
+     sky130_fd_sc_hd__a32o_2       108
+     sky130_fd_sc_hd__a41o_2         3
+     sky130_fd_sc_hd__and2_2       218
+     sky130_fd_sc_hd__and2b_2       29
+     sky130_fd_sc_hd__and3_2       110
+     sky130_fd_sc_hd__and3b_2       41
+     sky130_fd_sc_hd__and4_2        44
+     sky130_fd_sc_hd__and4b_2        1
+     sky130_fd_sc_hd__buf_1       2613
+     sky130_fd_sc_hd__buf_2         18
+     sky130_fd_sc_hd__conb_1       106
+     sky130_fd_sc_hd__dfxtp_2     1596
+     sky130_fd_sc_hd__inv_2         69
+     sky130_fd_sc_hd__mux2_1         1
+     sky130_fd_sc_hd__mux2_2      1629
+     sky130_fd_sc_hd__mux4_2       440
+     sky130_fd_sc_hd__nand2_2      229
+     sky130_fd_sc_hd__nand2b_2       1
+     sky130_fd_sc_hd__nand3_2       13
+     sky130_fd_sc_hd__nand3b_2       4
+     sky130_fd_sc_hd__nand4_2        2
+     sky130_fd_sc_hd__nor2_2       226
+     sky130_fd_sc_hd__nor2b_2        1
+     sky130_fd_sc_hd__nor3_2        13
+     sky130_fd_sc_hd__nor3b_2        3
+     sky130_fd_sc_hd__nor4_2         4
+     sky130_fd_sc_hd__nor4b_2        2
+     sky130_fd_sc_hd__o2111a_2       4
+     sky130_fd_sc_hd__o2111ai_2      4
+     sky130_fd_sc_hd__o211a_2       94
+     sky130_fd_sc_hd__o211ai_2       5
+     sky130_fd_sc_hd__o21a_2       203
+     sky130_fd_sc_hd__o21ai_2      118
+     sky130_fd_sc_hd__o21ba_2        9
+     sky130_fd_sc_hd__o21bai_2       4
+     sky130_fd_sc_hd__o221a_2       67
+     sky130_fd_sc_hd__o22a_2        45
+     sky130_fd_sc_hd__o2bb2a_2       6
+     sky130_fd_sc_hd__o311a_2        5
+     sky130_fd_sc_hd__o31a_2        15
+     sky130_fd_sc_hd__o31ai_2        8
+     sky130_fd_sc_hd__o32a_2         3
+     sky130_fd_sc_hd__o32ai_2        1
+     sky130_fd_sc_hd__o41a_2         2
+     sky130_fd_sc_hd__or2_2        385
+     sky130_fd_sc_hd__or2b_2        23
+     sky130_fd_sc_hd__or3_2         49
+     sky130_fd_sc_hd__or3b_2        19
+     sky130_fd_sc_hd__or4_2         33
+     sky130_fd_sc_hd__or4b_2         5
+     sky130_fd_sc_hd__xnor2_2       86
+     sky130_fd_sc_hd__xor2_2        38
+
+   Chip area for module '\picorv32': 100880.502400
+
 ```
 The STA Reports can be viewed from the Reports folder.
 
@@ -384,5 +436,236 @@ The snippet below shows a layout for CMOS Inverter with and without design rule 
 * Waveform of inverter
 ![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185789528-bd2ad88f-fc5c-4fca-9184-a3f908a51e48.jpeg)
 
+## Magic Layout to Standard Cell LEF
+  Before creating the LEF file we require some details about the layers in the designs. This details are available in a `tracks.info` as shown below. It gives information about the `offset` and `pitch` of a track in a given layer both in horizontal and vertical direction. The track information is given in below mentioned format.
+
+![d4_track_info](https://user-images.githubusercontent.com/88897605/185789633-3f74076d-3e19-424f-ac70-427471953b94.jpeg)
+
+  To create a standard cell LEF from an existing layout, some important aspects need to be taken into consideration.
+  1. The height of cell be appropriate, so that the `VPWR` and `VGND` properly fall on the power distribution network.
+  2. The width of cell should be an odd multiple of the minimum permissible grid size.
+  3. The input and ouptut of the cell fall on intersection of the vertical and horizontal grid line.
+
+### Standard Cell LEF generation
+Before the CMOS Inverter standard cell LEF is extracted, the purpose of ports must be defined:
+Select port A in magic:
+```
+port class input
+port use signal
+```
+Select Y area
+```
+port class output
+port class signal
+```
+Select VPWR area
+```
+port class inout
+port use power
+```
+
+Select VGND area
+```
+port class inout
+port use ground
+```
+
+LEF extraction can be carried out in tkcon as follows:
+```
+lef write
+```
+This generates ```sky130_vsdinv.lef``` file.
 
 
+### Integrating custom cell in OpenLANE
+
+In order to include the new standard cell in the synthesis, copy the sky130_vsdinv.lef file to the ```designs/picorv32a/src``` directory  
+Since abc maps the standard cell to a library abc there must be a library that defines the CMOS inverter. The ```sky130_fd_sc_hd_typical.lib``` file from ```vsdstdcelldesign/libs``` directory needs to be copied to the ```designs/picorv32a/src``` directory (Note: the slow and fast library files may also be copied).
+
+Next, ```config.tcl``` must be modified:
+```
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__typical.lib"
+set ::env(LIB_SLOWEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__slow.lib"
+set ::env(LIB_FASTEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__typical.lib"
+
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+```
+
+In order to integrate the standard cell in the OpenLANE flow, invoke openLANE as usual and carry out following steps:
+
+```
+prep -design picorv32a -tag 02-07_07-56 -overwrite
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+run_synthesis
+```
+
+Next floorplan is run, followed by placement:
+
+```
+init_floorplan
+run_placement
+```
+
+To check the layout invoke magic from the ```results/placement``` directory:
+
+Since the custom standard cell has been plugged into the openLANE flow, it would be visible in the layout:
+![invadded](https://user-images.githubusercontent.com/88897605/185789824-fee07aa9-71e9-430b-b0e6-a6d286d941f4.png)
+
+ ## Timing Analysis using OpenSTA
+  The Static Timing Analysis(STA) of the design is carried out using the OpenSTA tool. The analysis can be done in to different ways.
+  - Inside OpenLANE flow: This is by invoking `openroad` command inside the OpenLANE flow. In the openroad OpenSTA is invoked.
+  - Outside OpenLANE flow: This is done by directly invoking OpenSTA in the command line. This requires extra configuration to be done to specific the verilog file, constraints, clcok period and other required parameters.
+   
+  OpenSTA is invoked using the below mentioned command.
+  
+    sta <conf-file-if-required>
+  
+  The above command gives an Timing Analysis Report which contains:
+   1. Hold Time Slack
+   2. Setup Time Slack
+   3. Total Negative Slack (= 0.00, if no negative slack)
+   4. Worst Negative Slack (= 0.00, if no negative slack)
+
+```
+
+Startpoint: _16415_ (rising edge-triggered flip-flop clocked by clk)
+Endpoint: _16415_ (rising edge-triggered flip-flop clocked by clk)
+Path Group: clk
+Path Type: min
+
+Fanout     Cap    Slew   Delay    Time   Description
+-----------------------------------------------------------------------------
+                  0.15    0.00    0.00   clock clk (rise edge)
+                          0.00    0.00   clock network delay (ideal)
+                  0.15    0.00    0.00 ^ _16415_/CLK (sky130_fd_sc_hd__dfxtp_2)
+                  0.10    0.38    0.38 ^ _16415_/Q (sky130_fd_sc_hd__dfxtp_2)
+     6    0.02                           count_cycle[55] (net)
+                  0.10    0.00    0.38 ^ _12939_/A1 (sky130_fd_sc_hd__a21oi_2)
+                  0.03    0.05    0.43 v _12939_/Y (sky130_fd_sc_hd__a21oi_2)
+     1    0.00                           _00636_ (net)
+                  0.03    0.00    0.44 v _16415_/D (sky130_fd_sc_hd__dfxtp_2)
+                                  0.44   data arrival time
+
+                  0.15    0.00    0.00   clock clk (rise edge)
+                          0.00    0.00   clock network delay (ideal)
+                          0.25    0.25   clock uncertainty
+                          0.00    0.25   clock reconvergence pessimism
+                                  0.25 ^ _16415_/CLK (sky130_fd_sc_hd__dfxtp_2)
+                         -0.02    0.23   library hold time
+                                  0.23   data required time
+-----------------------------------------------------------------------------
+                                  0.23   data required time
+                                 -0.44   data arrival time
+-----------------------------------------------------------------------------
+                                  0.20   slack (MET)
+```
+
+  
+  If the design produces any setup timing violaions in the analysis, it can be eliminated or reduced using techniques as follows:
+  1. Increase the clock period (Not always possible as generally operating frequency is freezed in the specifications)
+  2. Scaling the buffers (Causes increase in design area)
+  3. Restricting the maximum fan-out of an element. 
+
+ ## Clock Tree Synthesis using TritonCTS
+  Clock Tree Synthesis(CTS) is a process which makes sure that the clock gets distributed evenly to all sequential elements in a design. The goal of CTS is to minimize the clock latency and skew.
+  There are several CTS techniques like:
+  1. H - Tree
+  2. X - Tree
+  3. Fish bone
+  
+  In OpenLANE, clock tree synthesis is carried out using TritonCTS tool. CTS should always be done after the floorplanning and placement as the CTS is carried out on a `placement.def` file that is created during placement stage.
+  
+  The command used for running CTS in OpenLANE is given below.
+  
+    ```run_cts```
+    
+ This CTS is performed on the placement .def file. Since that is the recently run 
+
+- In openlane type `openroad`
+- Read the lef file
+    - `read_lef /openLANE_flow/designs/picorv32a/runs/t3/tmp/merged.lef`
+- Read the Def file
+    - `read_def /openLANE_flow/designs/picorv32a/runs/t3/results/cts/picorv32a.placement.def`
+- Create the db
+    - `write_db pico_cts_2.db`
+- Preform Analysis using OpenSTA inside openroad
+- `read_db pico_cts_2.db`
+- `read_verilog /openLANE_flow/designs/picorv32a/runs/t3/results/synthesis/picorv32a.v`
+- `read_liberty $::env(LIB_SYNTH_COMPLETE)`
+- `link_design picorv32a`
+- `read_sdc /openLANE_flow/vsdstdcelldesign/extras/my_base.sdc`
+- Set the clock buffer to use from 2
+- `set ::env(CTS_CLK_BUFFER_LIST) [lreplace $::env(CTS_CLK_BUFFER_LIST) 0 0]`
+- `set_propagated_clock [all_clocks]`
+- `report_checks -format full_clock_expanded -digits 4`
+
+![Screenshot from 2022-08-21 15-49-59](https://user-images.githubusercontent.com/88897605/185790437-ac0911ac-0a54-449e-b732-ea77b09739fe.png)
+
+
+## Generation of Power Distribution Network
+   In a normal RTL to GDSII flow the generation of power distribution network is done before the placement step, but in the OpenLANE flow generation of PDN is carried out after the Clock Tree Synthesis(CTS). This step generates all the tracks, rails required for routing power to entire chip.
+   Generation of power distribution network is done using following command.
+   
+    ```gen_pdn```
+    
+- `gen_pdn` - Generate the Power Distribution network
+- The power distrubution network has to take the `design_cts.def` as the input def file.
+- This will create the grid and the straps for the Vdd and the ground. These are placed around the standard cells.
+- The standard cells are designed such that it's height is multiples of the space between the Vdd and the ground rails. Here, the pitch is `2.72`. Only if the above conditions are adhered it is possible to power the standard cells.
+- The power to the chip, enters through the `power pads`. There is each for Vdd and Gnd
+- From the pads, the power enters the `rings`, through the `via`
+- The `straps` are connected to the ring. Vdd straps are connected to the Vdd ring and the Gnd Straps are connected to the Gnd ring. There are horizontal and the vertical straps
+- Now the power has to be supplied from the straps to the standard cells. The straps are connected to the `rails` of the standard cells
+- If macros are present then the straps attach to the `rings` of the macros via the `macro pads` and the pdn for the macro is pre-done.
+- There are definitions for the straps and the railss. In this design straps are at metal layer 4 and 5 and the standard cell rails are at the metal layer 1. Vias connect accross the layers as required.
+
+## Routing using TritonRoute
+   OpenLANE uses TritonRoute, an open source router for modern industrial designs. The router consists of several main building blocks, including pin access analysis, track assignment, initial detailed routing, search and repair, and a DRC engine.
+   The routing process is implemented in two stages:
+   1. Global Routing - Routing guides are generated for interconnects
+   2. Detailed Routing - Tracks are generated interatively.
+   TritonRoute 14 ensures there are no DRC violations after routing.
+   
+   The following command is used for routing.
+   
+    ```run_routing```
+    
+- `run_routing` - To start the routing
+- The options for routing can be set in the `config.tcl` file. 
+- The optimisations in routing can also be done by specifying the routing strategy to use different version of `TritonRoute Engine`. There is a trade0ff between the optimised route and the runtime for routing.
+- For the default setting picorv32a takes approximately 30 minutesaccording to the current version of TritonRoute.
+- This routing stage must have the `CURRENT_DEF` set to `pdn.def`
+- The two stages of routing are performed by the following engines
+    - Global Route : Fast Route
+    - Detailed Route : Triton Route
+- Fast Route generates the routing guides, whereas Triton Route uses the Global Route and then completes the routing with some strategies and optimisations for finding the best possible path connect the pins.
+
+![Screenshot from 2022-08-21 15-50-59](https://user-images.githubusercontent.com/88897605/185790608-d720606f-a4fb-4985-bf89-221506bf8b1b.png)
+
+## GDSII
+
+GDS Stands for Graphic Design Standard. This is the file that is sent to the foundry and is called "tape-out" 
+
+*Fact- Earlier, the GDS files were written on magnetic tapes and sent out to the foundry and hence the name "tape-out"*
+
+In openLane use the command `run_magic`
+
+The GDSII file is generated in the `results/magic` directory
+
+Checking DRC using `run_magic_drc`
+
+![Screenshot from 2022-08-21 15-52-00](https://user-images.githubusercontent.com/88897605/185790695-3bffba4a-9a3c-4803-885b-4278c11a3050.png)
+
+No DRC errors are found.
+
+Opening the GDSII file in `klayout`
+
+# Contributor
+Aakash K</br>
+Contact:iaakashkrish@gmail.com</br>
+
+# Acknowledgements
+
+- [Kunal Ghosh](https://github.com/kunalg123), Co-founder, VSD Corp. Pvt. Ltd - kunalpghosh@gmail.com
