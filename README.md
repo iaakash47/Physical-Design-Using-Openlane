@@ -276,17 +276,25 @@ The openSTA tool generated the timing reports. It can be seen from below that
 ### Key concepts
 
 #### Utilisation Factor 
+```
+Utilisation Factor =  Area occupied by netlist
+                     __________________________
+                        Total area of core
+```
+
 
 - The flop ratio is defined as the ratio of the number of flops to the total number of cells
 - Here flop ratio is **1613/14876 = 0.1084** (i.e: 10.8%) [From the synthesis statistics]
-
-#### Utilisation Factor
-
-- The ratio of area occupied by the cells in the netlist to the total area of the core
-- Best practice is to set the utilisation factor less than 50% so that there will be space for optimisations, routing, inserting buffers etc.,
+- 
+A Utilisation Factor of 1 signifies 100% utilisation leaving no space for extra cells such as buffer. However, practically, the Utilisation Factor is 0.5-0.6. Likewise, an Aspect ratio of 1 implies that the chip is square shaped. Any value other than 1 implies rectanglular chip.
 
 ### Aspect Ratio
 
+```
+Aspect Ratio =  Height
+               ________
+                Width
+```
 - Aspect ratio is the ratio of height to the width of the die.
 - Aspect Ratio of 1 indicates that the die is a square die
 
@@ -330,6 +338,7 @@ Successful floorplanning gives a `def` file as output. This file contains the di
 ![floorplan](https://user-images.githubusercontent.com/88897605/185786882-95ac2b3b-7545-4721-af5d-4c8fe27e821d.jpeg)
 
 * Floorplan in Expanded View 
+
 ![d2_floorplan_magic_expand](https://user-images.githubusercontent.com/88897605/185786905-a463703b-3415-431c-a12a-5d2dde4c2614.jpeg)
 
 * Floorplan in Klayout 
@@ -397,16 +406,95 @@ Successful placement gives a `def` file as output.
 - Output : CDL(Circuit Description Language), GDSII(Graphic Design Standard 2), LEF(Layout Exchange Format), .lib containing Timing, Noise and Power characteristics
 
 
+### Timing Parameter Definitions
+
+Timing defintion | Value
+------------ | -------------
+slew_low_rise_thr  | 20% value
+slew_high_rise_thr |  80% value
+slew_low_fall_thr | 20% value
+slew_high_fall_thr | 80% value
+in_rise_thr | 50% value
+in_fall_thr | 50% value
+out_rise_thr | 50% value
+out_fall_thr | 50% value
+
+```
+
+```
+rise delay =  time(out_fall_thr) - time(in_rise_thr)
+
+Fall transition time: time(slew_high_fall_thr) - time(slew_low_fall_thr)
+
+Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
+```
+
+### SPICE Deck creation & Simulation
+
+A SPICE deck includes information about the following:
+1. Model description
+2. Netlist description
+3. Component connectivity
+4. Component values
+5. Capacitance load
+6. Nodes
+7. Simulation type and parameters
+8. Libraries included
 The inverter design is done using Magic Layout Tool. It takes the technology file as an input (`sky130A.tech` in this case). Magic tool provide a very easy to use interface to design various layers of the layout. It also has an in-built DRC check fetaure.
 
 The snippet below shows a layout for CMOS Inverter with and without design rule violations.
   
 ![Screenshot from 2022-08-21 14-38-06](https://user-images.githubusercontent.com/88897605/185787840-d52b173d-f8ec-47b4-8217-f630ada843d3.png)
+## Extract SPICE Netlist from Standard Cell Layout
+  To simulate and verify the functionality of the standard cell layout designed, there is a need of SPICE netlist of a given layout. To mention in brief, "Simulation Program with Integrated Circuit Emphasis (SPICE)" is an industry standard design language for electronic circuitry. SPICE model very closely models the actual circuit behavior.
+  Extraction of SPICE model for a given layout is done in two stages.
+  1. Extract the circuit from the layout design.
+  
+    extract all
+  
+  2. Convert the extracted circuit to SPICE model.
+  ``` 
+    ext2spice cthresh 0 rthresh 0
+    ext2spice
+  ```
+  The extracted SPICE model like the first snippet shown below. Some modification are done to the SPICE netlist for the purpose of simulations, which is shown in the second snippet below.
+  
+![extract_spice](https://user-images.githubusercontent.com/88897605/185788841-bccfac41-089d-40cc-9c18-ca03df852c36.jpeg)
+
   
 * Post Layout Waveform
 
 ![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185787832-ad07de39-619e-4d86-982a-d110ab17af8c.jpeg)
 
+This generates the ```sky130_in.spice``` file as shown above. This SPICE deck is edited to include ```pshort.lib``` and ```nshort.lib``` which are the PMOS and NMOS libraries respectively. In addition, the minimum grid size of inverter is measured from the magic layout and incorporated into the deck as: ```.option scale=0.01u```. The model names in the MOSFET definitions are changed to ```pshort.model.0``` and ```nshort.model.0``` respectively for PMOS and NMOS. Finally voltage sources and simulation commands are defined as follows:
+```
+VDD VPWR 0 3.3V
+VSS VGND 0 0
+Va A VGND PUSLE(0V 3.3V 0 0.1ns 0.1 ns 2ns 4ns)
+.tran 1n 20n
+.control
+run 
+.endc
+.end
+```
+
+For simulation, ngspice is invoked in ther terminal:
+```
+ngspice sky130_inv.spice
+```
+The output "y" is to be plotted with "time" and swept over the input "a":
+```
+plot y vs time a
+```
+## Magic Layout to Standard Cell LEF
+  Before creating the LEF file we require some details about the layers in the designs. This details are available in a `tracks.info` as shown below. It gives information about the `offset` and `pitch` of a track in a given layer both in horizontal and vertical direction. The track information is given in below mentioned format.
+  
+    <layer-name> <X-or-Y> <track-offset> <track-pitch>
+  
+  To create a standard cell LEF from an existing layout, some important aspects need to be taken into consideration.
+  1. The height of cell be appropriate, so that the `VPWR` and `VGND` properly fall on the power distribution network.
+  2. The width of cell should be an odd multiple of the minimum permissible grid size.
+  3. The input and ouptut of the cell fall on intersection of the vertical and horizontal grid line.
 
 
 
