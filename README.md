@@ -65,6 +65,24 @@ In this project a complete RTL to GDSII flow for  PicoRV32a SoC is executed with
 With the advent of open-source technologies for Chip development, there were several RTL designs, EDA Tools which were open-sourced. The missing piece in a complete Open source chip development was filled by the [SKY130 PDK](https://skywater-pdk.readthedocs.io/en/latest/rules.html) from Skywater Technologies and Google.  There were several EDA Tools, which played specfic roles in the design cycle. There was not a clean design flow and Skywater pdk was compatible with only the industrty tools.  [OpenLane](https://github.com/The-OpenROAD-Project/OpenLane) addressed these issues in providing a completely automated and clean RTL to GDSII flow. OpenLane is not a tool, but a flow which consists of several EDA tools, automation scripts and Skywater-pdks tuned to work specifically with the open-source EDA tools.
 The current release target to a SKY130 (i.e. 130 nm) process node is available as [SkyWater Open Source PDK](https://github.com/google/skywater-pdk). The PDK provides Physical VLSI Designer with a wide range of flexibility in design choices. All the designs and simulations listed in this repository are carried out using the same SkyWater Open Source PDK.
 
+RTL to GDSII Flow refers to the all the steps involved in converting a logical Register Transfer Level(RTL) Design to a fabrication ready GDSII format. GDSII is a database file format which is an industry standard for data exchange of IC layout artwork.
+  The RTL to GSDII flow consists of following steps:
+  - RTL Synthesis
+  - Static Timing Analysis(STA)
+  - Design for Testability(DFT)
+  - Floorplanning
+  - Placement
+  - Clock Tree Synthesis(CTS)
+  - Routing
+  - GDSII Streaming
+ 
+ All the steps are further discussed in details in the repository.
+ 
+ # About Google SkyWater PDK
+ 
+Google and SkyWater Technology Foundry in collaboration have released a completely open-source Process Design Kit(PDK) in May, 2020. The current release target to a SKY130 (i.e. 130 nm) process node is available as [SkyWater Open Source PDK](https://github.com/google/skywater-pdk). The PDK provides Physical VLSI Designer with a wide range of flexibility in design choices. All the designs and simulations listed in this repository are carried out using the same SkyWater Open Source PDK.
+
+
 ## Overall Design Flow
 For a design Specification an RTL Design is written in HDLs like Verilog /VHDL or RTL Design is generated using Hardware Construction Languages like Chisel or High Level Synthesis using  SystemC, MATLAB HDL Coder, Bluespec etc
 
@@ -308,5 +326,89 @@ Floorplanning involves the following stages
 Command: `run_floorplan`
 
 Successful floorplanning gives a `def` file as output. This file contains the die area and placement of standard cells.
+
+![floorplan](https://user-images.githubusercontent.com/88897605/185786882-95ac2b3b-7545-4721-af5d-4c8fe27e821d.jpeg)
+
+* Floorplan in Expanded View 
+![d2_floorplan_magic_expand](https://user-images.githubusercontent.com/88897605/185786905-a463703b-3415-431c-a12a-5d2dde4c2614.jpeg)
+
+* Floorplan in Klayout 
+
+![Screenshot from 2022-08-21 15-45-00](https://user-images.githubusercontent.com/88897605/185786300-26756d66-642a-4994-b157-c390922cb02c.png)
+
+
+he next step after floorplanning is placement. Placement determines location of each of the components on the die. Placement does not just place the standard cells available in the synthesized netlist. It also optimizes the design, thereby removing any timing violations created due to the relative placement on die.
+   
+## Placement 
+- In this steps the standard cells are placed in the floorplanned design
+- In palcement buffers are placed whereever the wire delay is large
+- Placement in openlane happens in two steps
+    - Global Placament
+    - Detailed Placement
+- Global placement is not always legalised
+- However, Detailed placement is strict and adheres to the Design Rules
+   Placement in OpenLANE is done using the following command. 
+    
+ ```run_placement```
+   
+The DEF file created during floorplan is used as an input to placement. Placement in OpenLANE occurs in two stages:
+   - Global Placement
+   - Detailed Placement
+   
+Placement is carried out as an iterative process till the value of overflow converges to 0.
+   
+Successful placement gives a `def` file as output.
+
+![d2_placement_magic](https://user-images.githubusercontent.com/88897605/185787060-d69b4472-5297-4a98-95ce-bd7e0d24ce4f.jpeg)
+
+* Placement in KLayout View 
+![Screenshot from 2022-08-21 15-49-59](https://user-images.githubusercontent.com/88897605/185787105-2561d28c-d22d-4bca-8d13-2183417ef7e1.png)
+
+ 
+### Cell Design Flow
+
+ In a border view Cell Design flow is are the stages or steps involved in the entire design of a standard cell. The figure below shows the input, output and design steps involved in cell design
+  
+ 
+### Characterization Flow
+  There are few problems of Standard Cells in polygon level format (GDSII). Some of them are:
+  - Extraction of functionality is complicated and unnecessary as it is known
+  - Functional/Delay simulation takes way too long
+  - Power extraction for a whole chip takes too long
+  - Automatic detection of timing constraints (e.g. Setup time) is difficult
+
+  A solution to above problems is Cell Characterization. It is a simple model for delay, function, constraints and power on cell/gate level. The Characterization Flow consists of the following stages:
+  1. Netlist Extraction - Transistors, resistances and capacitances are extracted with special tools and saved as SPICE netlist (or similar)
+  2. Specification of parameters - Library-wide parameters have to be specified: e.g. max Transition time
+  3. Model selection and specification - The used models determine the required data
+  4. Measurement - The cells are simulated with a SPICE-like tool to obtain the required data
+  5. Model Generation - The obtained data is fed into the models
+  6. Verification - Different checks are performed to ensure the correctness of the characterization
+  
+  
+- Inputs : PDK, DRC & LVS rules, SPICE models, library & User defined specs
+    - The introduction of lambda based design rules allowed a design to be loosely tied with the fabrication process
+    - The layout geometry (DRC) are expressed in terms of multiples of lambda which is half the feature size
+    - Users define the cell height to be the separation between the power and the ground rail
+    - Cell width is dependent on the timing information and required drive strength
+    - Cell Width increases, Area Increases, Timing decreases, Drive Strength increases as the Resistance and Capacitance decreases(RC)
+    - Supply voltage is also specified by the top level design
+    - The designed cell must fit in the above specifications
+- Output : CDL(Circuit Description Language), GDSII(Graphic Design Standard 2), LEF(Layout Exchange Format), .lib containing Timing, Noise and Power characteristics
+
+
+The inverter design is done using Magic Layout Tool. It takes the technology file as an input (`sky130A.tech` in this case). Magic tool provide a very easy to use interface to design various layers of the layout. It also has an in-built DRC check fetaure.
+
+The snippet below shows a layout for CMOS Inverter with and without design rule violations.
+  
+![Screenshot from 2022-08-21 14-38-06](https://user-images.githubusercontent.com/88897605/185787840-d52b173d-f8ec-47b4-8217-f630ada843d3.png)
+  
+* Post Layout Waveform
+
+![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185787832-ad07de39-619e-4d86-982a-d110ab17af8c.jpeg)
+
+
+
+
 
 
