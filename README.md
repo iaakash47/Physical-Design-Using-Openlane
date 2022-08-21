@@ -459,7 +459,8 @@ The snippet below shows a layout for CMOS Inverter with and without design rule 
   ```
   The extracted SPICE model like the first snippet shown below. Some modification are done to the SPICE netlist for the purpose of simulations, which is shown in the second snippet below.
   
-![extract_spice](https://user-images.githubusercontent.com/88897605/185788841-bccfac41-089d-40cc-9c18-ca03df852c36.jpeg)
+![extract_spice](https://user-images.githubusercontent.com/88897605/185789094-a8932342-cc02-4867-864f-4ffb791ea621.jpeg)
+
 
   
 * Post Layout Waveform
