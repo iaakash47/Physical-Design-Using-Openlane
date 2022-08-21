@@ -445,6 +445,7 @@ The inverter design is done using Magic Layout Tool. It takes the technology fil
 The snippet below shows a layout for CMOS Inverter with and without design rule violations.
   
 ![Screenshot from 2022-08-21 14-38-06](https://user-images.githubusercontent.com/88897605/185787840-d52b173d-f8ec-47b4-8217-f630ada843d3.png)
+
 ## Extract SPICE Netlist from Standard Cell Layout
   To simulate and verify the functionality of the standard cell layout designed, there is a need of SPICE netlist of a given layout. To mention in brief, "Simulation Program with Integrated Circuit Emphasis (SPICE)" is an industry standard design language for electronic circuitry. SPICE model very closely models the actual circuit behavior.
   Extraction of SPICE model for a given layout is done in two stages.
@@ -467,35 +468,6 @@ The snippet below shows a layout for CMOS Inverter with and without design rule 
 
 ![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185787832-ad07de39-619e-4d86-982a-d110ab17af8c.jpeg)
 
-This generates the ```sky130_in.spice``` file as shown above. This SPICE deck is edited to include ```pshort.lib``` and ```nshort.lib``` which are the PMOS and NMOS libraries respectively. In addition, the minimum grid size of inverter is measured from the magic layout and incorporated into the deck as: ```.option scale=0.01u```. The model names in the MOSFET definitions are changed to ```pshort.model.0``` and ```nshort.model.0``` respectively for PMOS and NMOS. Finally voltage sources and simulation commands are defined as follows:
-```
-VDD VPWR 0 3.3V
-VSS VGND 0 0
-Va A VGND PUSLE(0V 3.3V 0 0.1ns 0.1 ns 2ns 4ns)
-.tran 1n 20n
-.control
-run 
-.endc
-.end
-```
-
-For simulation, ngspice is invoked in ther terminal:
-```
-ngspice sky130_inv.spice
-```
-The output "y" is to be plotted with "time" and swept over the input "a":
-```
-plot y vs time a
-```
-## Magic Layout to Standard Cell LEF
-  Before creating the LEF file we require some details about the layers in the designs. This details are available in a `tracks.info` as shown below. It gives information about the `offset` and `pitch` of a track in a given layer both in horizontal and vertical direction. The track information is given in below mentioned format.
-  
-    <layer-name> <X-or-Y> <track-offset> <track-pitch>
-  
-  To create a standard cell LEF from an existing layout, some important aspects need to be taken into consideration.
-  1. The height of cell be appropriate, so that the `VPWR` and `VGND` properly fall on the power distribution network.
-  2. The width of cell should be an odd multiple of the minimum permissible grid size.
-  3. The input and ouptut of the cell fall on intersection of the vertical and horizontal grid line.
 
 
 
