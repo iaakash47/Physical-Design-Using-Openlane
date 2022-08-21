@@ -374,102 +374,15 @@ Successful placement gives a `def` file as output.
 ![Screenshot from 2022-08-21 15-49-59](https://user-images.githubusercontent.com/88897605/185787105-2561d28c-d22d-4bca-8d13-2183417ef7e1.png)
 
  
-### Cell Design Flow
-
- In a border view Cell Design flow is are the stages or steps involved in the entire design of a standard cell. The figure below shows the input, output and design steps involved in cell design
-  
- 
-### Characterization Flow
-  There are few problems of Standard Cells in polygon level format (GDSII). Some of them are:
-  - Extraction of functionality is complicated and unnecessary as it is known
-  - Functional/Delay simulation takes way too long
-  - Power extraction for a whole chip takes too long
-  - Automatic detection of timing constraints (e.g. Setup time) is difficult
-
-  A solution to above problems is Cell Characterization. It is a simple model for delay, function, constraints and power on cell/gate level. The Characterization Flow consists of the following stages:
-  1. Netlist Extraction - Transistors, resistances and capacitances are extracted with special tools and saved as SPICE netlist (or similar)
-  2. Specification of parameters - Library-wide parameters have to be specified: e.g. max Transition time
-  3. Model selection and specification - The used models determine the required data
-  4. Measurement - The cells are simulated with a SPICE-like tool to obtain the required data
-  5. Model Generation - The obtained data is fed into the models
-  6. Verification - Different checks are performed to ensure the correctness of the characterization
-  
-  
-- Inputs : PDK, DRC & LVS rules, SPICE models, library & User defined specs
-    - The introduction of lambda based design rules allowed a design to be loosely tied with the fabrication process
-    - The layout geometry (DRC) are expressed in terms of multiples of lambda which is half the feature size
-    - Users define the cell height to be the separation between the power and the ground rail
-    - Cell width is dependent on the timing information and required drive strength
-    - Cell Width increases, Area Increases, Timing decreases, Drive Strength increases as the Resistance and Capacitance decreases(RC)
-    - Supply voltage is also specified by the top level design
-    - The designed cell must fit in the above specifications
-- Output : CDL(Circuit Description Language), GDSII(Graphic Design Standard 2), LEF(Layout Exchange Format), .lib containing Timing, Noise and Power characteristics
-
-
-### Timing Parameter Definitions
-
-Timing defintion | Value
------------- | -------------
-slew_low_rise_thr  | 20% value
-slew_high_rise_thr |  80% value
-slew_low_fall_thr | 20% value
-slew_high_fall_thr | 80% value
-in_rise_thr | 50% value
-in_fall_thr | 50% value
-out_rise_thr | 50% value
-out_fall_thr | 50% value
-
-```
-
-```
-rise delay =  time(out_fall_thr) - time(in_rise_thr)
-
-Fall transition time: time(slew_high_fall_thr) - time(slew_low_fall_thr)
-
-Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
-```
-
-### SPICE Deck creation & Simulation
-
-A SPICE deck includes information about the following:
-1. Model description
-2. Netlist description
-3. Component connectivity
-4. Component values
-5. Capacitance load
-6. Nodes
-7. Simulation type and parameters
-8. Libraries included
-The inverter design is done using Magic Layout Tool. It takes the technology file as an input (`sky130A.tech` in this case). Magic tool provide a very easy to use interface to design various layers of the layout. It also has an in-built DRC check fetaure.
-
 The snippet below shows a layout for CMOS Inverter with and without design rule violations.
   
 ![Screenshot from 2022-08-21 14-38-06](https://user-images.githubusercontent.com/88897605/185787840-d52b173d-f8ec-47b4-8217-f630ada843d3.png)
 
-## Extract SPICE Netlist from Standard Cell Layout
-  To simulate and verify the functionality of the standard cell layout designed, there is a need of SPICE netlist of a given layout. To mention in brief, "Simulation Program with Integrated Circuit Emphasis (SPICE)" is an industry standard design language for electronic circuitry. SPICE model very closely models the actual circuit behavior.
-  Extraction of SPICE model for a given layout is done in two stages.
-  1. Extract the circuit from the layout design.
-  
-    extract all
-  
-  2. Convert the extracted circuit to SPICE model.
-  ``` 
-    ext2spice cthresh 0 rthresh 0
-    ext2spice
-  ```
-  The extracted SPICE model like the first snippet shown below. Some modification are done to the SPICE netlist for the purpose of simulations, which is shown in the second snippet below.
-  
-![extract_spice](https://user-images.githubusercontent.com/88897605/185789094-a8932342-cc02-4867-864f-4ffb791ea621.jpeg)
 
+![extract_spice](https://user-images.githubusercontent.com/88897605/185789526-eba7151f-8762-428d-bc01-36c1047e882e.jpeg)
 
-  
-* Post Layout Waveform
-
-![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185787832-ad07de39-619e-4d86-982a-d110ab17af8c.jpeg)
-
-
-
+* Waveform of inverter
+![inverter_ngspice](https://user-images.githubusercontent.com/88897605/185789528-bd2ad88f-fc5c-4fca-9184-a3f908a51e48.jpeg)
 
 
 
